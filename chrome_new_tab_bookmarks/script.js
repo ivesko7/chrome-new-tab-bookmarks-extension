@@ -26,7 +26,7 @@ let rippleCount = 1;
 let rippleSeconds = 6;
 let rippleIntervalId = null;
 let rippleEchoEnabled = true;
-let rippleEchoFreq = 10;
+let rippleEchoFreq = 8;
 let rippleEchoDelay = 0.9;
 
 function updateRippleEchoLabel() {
@@ -68,7 +68,7 @@ function initSettings() {
     rippleCount = parseInt(localStorage.getItem('zenRippleCount')) || 1;
     rippleSeconds = parseInt(localStorage.getItem('zenRippleSeconds')) || 6;
     const storedFreq = localStorage.getItem('zenRippleEchoFreq');
-    rippleEchoFreq = storedFreq !== null ? parseInt(storedFreq) : 10;
+    rippleEchoFreq = storedFreq !== null ? parseInt(storedFreq) : 8;
     const storedDelay = localStorage.getItem('zenRippleEchoDelay');
     rippleEchoDelay = storedDelay !== null ? parseFloat(storedDelay) : 0.9;
     const storedDecay = localStorage.getItem('zenRippleDecay');
@@ -138,7 +138,7 @@ function initSettings() {
         rippleCount = parseInt(document.getElementById('ripple-count').value) || 1;
         rippleSeconds = parseInt(document.getElementById('ripple-seconds').value) || 6;
         let freqVal = document.getElementById('ripple-echo-freq').value;
-        rippleEchoFreq = freqVal === '' ? 10 : parseInt(freqVal);
+        rippleEchoFreq = freqVal === '' ? 8 : parseInt(freqVal);
         rippleEchoDelay = parseFloat(document.getElementById('ripple-echo-delay').value) || 0.9;
         rippleDecayMultiplier = parseFloat(document.getElementById('ripple-decay').value) || 1.0;
 
@@ -380,7 +380,7 @@ document.addEventListener('mousemove', (e) => {
 
     const now = Date.now();
     let freq = parseInt(rippleEchoFreq);
-    if (isNaN(freq)) freq = 10;
+    if (isNaN(freq)) freq = 8;
     let freqMultiplier = freq === 10 ? 1.0 : (freq < 10 ? 1 + (10 - freq) * 0.5 : 1 / (1 + (freq - 10) * 0.3));
 
     // Determine thresholds
