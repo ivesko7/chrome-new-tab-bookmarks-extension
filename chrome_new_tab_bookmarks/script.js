@@ -374,6 +374,8 @@ animateRipples();
 // ==== RIPPLE ECHO ====
 let echoLastScheduledTime = 0;
 let echoLastScheduledPos = null;
+let echoStopTimeout = null;
+let echoLastMousePos = null;
 
 document.addEventListener('mousemove', (e) => {
     if (!zenRipplesEnabled || !rippleEchoEnabled) return;
@@ -413,6 +415,36 @@ document.addEventListener('mousemove', (e) => {
             }
         }, delayMs);
     }
+    
+    echoLastMousePos = { x: e.clientX, y: e.clientY };
+
+    if (echoStopTimeout) clearTimeout(echoStopTimeout);
+    
+    let timeSinceLast = Date.now() - echoLastScheduledTime;
+    let timeUntilRight = Math.max(50, timeThreshold - timeSinceLast);
+
+    echoStopTimeout = setTimeout(() => {
+        if (!zenRipplesEnabled || !rippleEchoEnabled || document.hidden) return;
+        if (!echoLastScheduledPos || !echoLastMousePos) return;
+
+        const dx = echoLastMousePos.x - echoLastScheduledPos.x;
+        const dy = echoLastMousePos.y - echoLastScheduledPos.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist >= minDistance * 0.20) {
+            const x = echoLastMousePos.x;
+            const y = echoLastMousePos.y;
+            echoLastScheduledPos = { x, y };
+            echoLastScheduledTime = Date.now();
+            
+            const delayMs = rippleEchoDelay * 1000;
+            setTimeout(() => {
+                if (zenRipplesEnabled && rippleEchoEnabled && !document.hidden) {
+                    createRipple(x, y, 80);
+                }
+            }, delayMs);
+        }
+    }, timeUntilRight);
 });
 
 function getPinnedSites() {
