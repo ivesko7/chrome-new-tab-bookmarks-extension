@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Mobile Bookmarks New Tab",
+  "version": "1.0",
+  "description": "Overrides the new tab page to show Top Sites and Mobile Bookmarks.",
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "permissions": [
+    "bookmarks",
+    "topSites",
+    "history",
+    "favicon"
+  ],
+  "host_permissions": [
+    "favicon"
+  ]
+}

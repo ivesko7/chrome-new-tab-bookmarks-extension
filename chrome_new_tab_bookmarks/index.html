@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Tab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <canvas id="water-canvas"></canvas>
+    <div id="app" class="container">
+        <!-- Settings Button -->
+        <button id="settings-btn" class="settings-btn" title="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                </path>
+            </svg>
+        </button>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn">&times;</span>
+                <h3>Settings</h3>
+                <div class="setting-group">
+                    <label for="column-count">Bookmarks Columns:</label>
+                    <input type="number" id="column-count" min="1" max="12" value="7">
+                </div>
+                <div class="setting-group">
+                    <label for="stone-toggle">Zen Ripples:</label>
+                    <input type="checkbox" id="stone-toggle" checked style="width: auto;">
+                </div>
+                <div class="setting-group" style="justify-content: flex-start; gap: 0.5rem;">
+                    <input type="number" id="ripple-count" min="0" max="50" value="1" style="width: 50px;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">ripples per</span>
+                    <input type="number" id="ripple-seconds" min="1" max="120" value="6" style="width: 50px;">
+                    <span style="color: var(--text-secondary); font-size: 0.9rem;">secs</span>
+                </div>
+                <div class="setting-group">
+                    <label for="echo-toggle">Ripple Echoes:</label>
+                    <input type="checkbox" id="echo-toggle" checked style="width: auto;">
+                </div>
+                <div class="setting-group" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <label for="ripple-echo-strength" style="font-size: 0.95rem;">Ripple Echo Strength:</label>
+                        <span id="ripple-echo-label" style="color: var(--accent-color); font-weight: 600;">Auto</span>
+                    </div>
+                    <input type="range" id="ripple-echo-strength" min="0" max="15" value="0"
+                        style="width: 100%; padding: 0; background: transparent; border: none; height: auto;">
+                </div>
+                <div class="setting-group" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <label for="ripple-echo-delay" style="font-size: 0.95rem;">Ripple Echo Delay:</label>
+                        <span id="ripple-echo-delay-label"
+                            style="color: var(--accent-color); font-weight: 600;">0.9s</span>
+                    </div>
+                    <input type="range" id="ripple-echo-delay" min="0.1" max="3.0" step="0.1" value="0.9"
+                        style="width: 100%; padding: 0; background: transparent; border: none; height: auto;">
+                </div>
+                <div class="setting-group" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+                    <div style="display: flex; justify-content: space-between; width: 100%;">
+                        <label for="ripple-decay" style="font-size: 0.95rem;">Ripple Fade Duration:</label>
+                        <span id="ripple-decay-label" style="color: var(--accent-color); font-weight: 600;">1.0x</span>
+                    </div>
+                    <input type="range" id="ripple-decay" min="1.0" max="3.0" step="0.1" value="1.0"
+                        style="width: 100%; padding: 0; background: transparent; border: none; height: auto;">
+                </div>
+                <button id="save-settings" class="save-btn">Save</button>
+            </div>
+        </div>
+
+        <!-- Rename Bookmark Modal -->
+        <div id="rename-modal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn rename-close">&times;</span>
+                <h3>Rename Bookmark</h3>
+                <div class="setting-group">
+                    <input type="text" id="rename-input" style="width: 100%;" placeholder="New Name">
+                </div>
+                <button id="save-rename" class="save-btn">Save</button>
+            </div>
+        </div>
+
+        <!-- Custom Context Menu -->
+        <div id="context-menu" class="context-menu" style="display: none;">
+            <div class="menu-item" action="open">Open</div>
+            <div class="menu-item" action="open-new">Open in New Tab</div>
+            <div class="menu-item" action="open-bg">Open in Background</div>
+            <div class="menu-separator" id="sep-pin"></div>
+            <div class="menu-item" action="pin">Pin Site</div>
+            <div class="menu-item" action="unpin" style="display: none;">Unpin Site</div>
+            <div class="menu-separator" id="sep-rename"></div>
+            <div class="menu-item" action="rename">Rename</div>
+            <div class="menu-item" action="delete">Delete</div>
+            <div class="menu-separator"></div>
+            <div class="menu-item" action="manage">Bookmarks Manager</div>
+        </div>
+
+        <!-- Time/Date Header -->
+        <header class="header">
+            <h1 id="time">00:00</h1>
+            <h2 id="date">Format Date</h2>
+        </header>
+
+        <!-- Top Sites Section -->
+        <section class="top-sites" id="top-sites-section" style="display: none;">
+            <div class="section-header" style="display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 1rem;">
+                <h3 style="border: none; margin: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Recent Sites</h3>
+                <button id="history-menu-btn" title="Recent History" style="position: absolute; right: 0; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); padding: 0.4rem 0.8rem; cursor: pointer; transition: background 0.2s; backdrop-filter: blur(10px);">
+                    History
+                </button>
+            </div>
+            <div id="top-sites-container" class="sites-grid"></div>
+        </section>
+
+        <!-- History Dropdown Menu -->
+        <div id="history-menu" class="context-menu" style="display: none;"></div>
+
+        <!-- Pinned Sites Section -->
+        <section class="top-sites" id="pinned-sites-section" style="display: none; margin-bottom: 2rem;">
+            <div class="section-header" style="display: flex; justify-content: center; align-items: center; position: relative; margin-bottom: 1rem;">
+                <h3 style="border: none; margin: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Pinned Sites</h3>
+            </div>
+            <div id="pinned-sites-container" class="pinned-sites-scroll-container"></div>
+        </section>
+
+        <!-- Bookmarks Section -->
+        <section class="bookmarks">
+            <div class="bookmarks-header">
+                <h3 id="bookmarks-title">Bookmarks Bar</h3>
+                <div class="sort-controls">
+                    <label for="sort-type">Sort By:</label>
+                    <select id="sort-type">
+                        <option value="default">Default (Custom Order)</option>
+                        <option value="name">Name</option>
+                        <option value="date">Date Added</option>
+                    </select>
+                    <button id="sort-direction-btn" title="Toggle Sort Direction" style="display: none;">
+                        <svg class="sort-icon asc" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <polyline points="19 12 12 19 5 12"></polyline>
+                        </svg>
+                        <svg class="sort-icon desc" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="16"
+                            height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="19" x2="12" y2="5"></line>
+                            <polyline points="5 12 12 5 19 12"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="bookmarks-container" class="bookmarks-grid"></div>
+        </section>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>
