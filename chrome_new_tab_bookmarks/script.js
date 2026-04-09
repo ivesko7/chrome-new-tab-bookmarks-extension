@@ -26,15 +26,14 @@ let rippleCount = 1;
 let rippleSeconds = 6;
 let rippleIntervalId = null;
 let rippleEchoEnabled = true;
-let rippleEchoStrength = 0;
+let rippleEchoFreq = 10;
 let rippleEchoDelay = 0.9;
 
 function updateRippleEchoLabel() {
-    const el = document.getElementById('ripple-echo-strength');
-    const label = document.getElementById('ripple-echo-label');
+    const el = document.getElementById('ripple-echo-freq');
+    const label = document.getElementById('ripple-echo-freq-label');
     if (el && label) {
-        const val = parseInt(el.value);
-        label.textContent = val === 0 ? "Auto" : val;
+        label.textContent = el.value + "/20";
     }
 
     const delayEl = document.getElementById('ripple-echo-delay');
@@ -68,7 +67,8 @@ function initSettings() {
 
     rippleCount = parseInt(localStorage.getItem('zenRippleCount')) || 1;
     rippleSeconds = parseInt(localStorage.getItem('zenRippleSeconds')) || 6;
-    rippleEchoStrength = parseInt(localStorage.getItem('zenRippleEchoStrength')) || 0;
+    const storedFreq = localStorage.getItem('zenRippleEchoFreq');
+    rippleEchoFreq = storedFreq !== null ? parseInt(storedFreq) : 10;
     const storedDelay = localStorage.getItem('zenRippleEchoDelay');
     rippleEchoDelay = storedDelay !== null ? parseFloat(storedDelay) : 0.9;
     const storedDecay = localStorage.getItem('zenRippleDecay');
@@ -76,16 +76,16 @@ function initSettings() {
 
     const countInput = document.getElementById('ripple-count');
     const secondsInput = document.getElementById('ripple-seconds');
-    const echoStrengthInput = document.getElementById('ripple-echo-strength');
+    const echoFreqInput = document.getElementById('ripple-echo-freq');
     const echoDelayInput = document.getElementById('ripple-echo-delay');
     const decayInput = document.getElementById('ripple-decay');
 
     if (countInput) countInput.value = rippleCount;
     if (secondsInput) secondsInput.value = rippleSeconds;
-    if (echoStrengthInput) {
-        echoStrengthInput.value = rippleEchoStrength;
+    if (echoFreqInput) {
+        echoFreqInput.value = rippleEchoFreq;
         updateRippleEchoLabel();
-        echoStrengthInput.addEventListener('input', updateRippleEchoLabel);
+        echoFreqInput.addEventListener('input', updateRippleEchoLabel);
     }
     if (echoDelayInput) {
         echoDelayInput.value = rippleEchoDelay;
@@ -137,13 +137,14 @@ function initSettings() {
 
         rippleCount = parseInt(document.getElementById('ripple-count').value) || 1;
         rippleSeconds = parseInt(document.getElementById('ripple-seconds').value) || 6;
-        rippleEchoStrength = parseInt(document.getElementById('ripple-echo-strength').value) || 0;
+        let freqVal = document.getElementById('ripple-echo-freq').value;
+        rippleEchoFreq = freqVal === '' ? 10 : parseInt(freqVal);
         rippleEchoDelay = parseFloat(document.getElementById('ripple-echo-delay').value) || 0.9;
         rippleDecayMultiplier = parseFloat(document.getElementById('ripple-decay').value) || 1.0;
 
         localStorage.setItem('zenRippleCount', rippleCount);
         localStorage.setItem('zenRippleSeconds', rippleSeconds);
-        localStorage.setItem('zenRippleEchoStrength', rippleEchoStrength);
+        localStorage.setItem('zenRippleEchoFreq', rippleEchoFreq);
         localStorage.setItem('zenRippleEchoDelay', rippleEchoDelay);
         localStorage.setItem('zenRippleDecay', rippleDecayMultiplier);
 
@@ -378,11 +379,13 @@ document.addEventListener('mousemove', (e) => {
     if (!zenRipplesEnabled || !rippleEchoEnabled) return;
 
     const now = Date.now();
-    let strength = parseInt(rippleEchoStrength) || 0;
+    let freq = parseInt(rippleEchoFreq);
+    if (isNaN(freq)) freq = 10;
+    let freqMultiplier = freq === 10 ? 1.0 : (freq < 10 ? 1 + (10 - freq) * 0.5 : 1 / (1 + (freq - 10) * 0.3));
 
-    // Determine distance threshold
-    let ripplesPerScreen = strength > 0 ? strength : 10; // Auto = 10 ripples per screen width
-    let minDistance = Math.max(50, window.innerWidth / ripplesPerScreen);
+    // Determine thresholds
+    let minDistance = Math.max(20, (window.innerWidth / 10) * freqMultiplier);
+    let timeThreshold = 500 * freqMultiplier;
 
     let shouldSchedule = false;
     if (!echoLastScheduledPos) {
@@ -392,7 +395,7 @@ document.addEventListener('mousemove', (e) => {
         const dy = e.clientY - echoLastScheduledPos.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
 
-        if (dist >= minDistance || (dist >= 50 && now - echoLastScheduledTime > 500)) {
+        if (dist >= minDistance || (dist >= 20 && now - echoLastScheduledTime > timeThreshold)) {
             shouldSchedule = true;
         }
     }
