@@ -229,7 +229,7 @@ function initContextMenu() {
                         if (!sites.some(s => s.url === url)) {
                             sites.push({ url: url, title: contextMenuTarget.title || url });
                             savePinnedSites(sites);
-                            loadPinnedSites();
+                            renderPinnedSites();
                         }
                     }
                     break;
@@ -238,7 +238,7 @@ function initContextMenu() {
                         let sites = getPinnedSites();
                         sites = sites.filter(s => s.url !== url);
                         savePinnedSites(sites);
-                        loadPinnedSites();
+                        renderPinnedSites();
                     }
                     break;
                 case 'rename':
@@ -447,19 +447,47 @@ document.addEventListener('mousemove', (e) => {
     }, timeUntilRight);
 });
 
+let pinnedSitesCache = [];
+
 function getPinnedSites() {
-    try {
-        return JSON.parse(localStorage.getItem('pinnedSites')) || [];
-    } catch (e) {
-        return [];
-    }
+    return pinnedSitesCache;
 }
 
 function savePinnedSites(sites) {
-    localStorage.setItem('pinnedSites', JSON.stringify(sites));
+    pinnedSitesCache = sites;
+    if (chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ pinnedSites: sites });
+    } else {
+        localStorage.setItem('pinnedSites', JSON.stringify(sites));
+    }
 }
 
 function loadPinnedSites() {
+    if (chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get(['pinnedSites'], (result) => {
+            if (result.pinnedSites) {
+                pinnedSitesCache = result.pinnedSites;
+            } else {
+                // Migration from localStorage
+                try {
+                    const oldSites = JSON.parse(localStorage.getItem('pinnedSites'));
+                    if (oldSites && oldSites.length > 0) {
+                        pinnedSitesCache = oldSites;
+                        savePinnedSites(pinnedSitesCache);
+                    }
+                } catch(e) {}
+            }
+            renderPinnedSites();
+        });
+    } else {
+        try {
+            pinnedSitesCache = JSON.parse(localStorage.getItem('pinnedSites')) || [];
+        } catch(e) {}
+        renderPinnedSites();
+    }
+}
+
+function renderPinnedSites() {
     const sites = getPinnedSites();
     const section = document.getElementById('pinned-sites-section');
     const container = document.getElementById('pinned-sites-container');
@@ -530,7 +558,7 @@ function loadPinnedSites() {
                 updatedSites.splice(index, 0, draggedItem);
                 
                 savePinnedSites(updatedSites);
-                loadPinnedSites();
+                renderPinnedSites();
             });
 
             a.addEventListener('contextmenu', (e) => {
